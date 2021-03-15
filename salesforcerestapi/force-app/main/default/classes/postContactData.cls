@@ -6,12 +6,23 @@
  * Ver   Date         Author             Modification
  * 1.0   03-15-2021   Vrushabh Uprikar   Initial Version
 **/
-public with sharing class postContactData 
+global with sharing class postContactData 
 {
+    global class InpData
+    {
+        @InvocableVariable
+        public String email;
+      
+        @InvocableVariable
+        public String fname;
 
-    public static HttpResponse makePostCallout( String fname, 
-                                                String lname,
-                                                String email) 
+        @InvocableVariable
+        public String lname;
+    }
+
+
+    @InvocableMethod(label = 'Invoke Business Logic')
+    global static void  makePostCallout(List<InpData> ipData) 
     {
         Http http = new Http();
         HttpRequest request = new HttpRequest();
@@ -19,9 +30,12 @@ public with sharing class postContactData
         request.setMethod('POST');
         request.setHeader('Content-Type', 'application/json;charset=UTF-8');
         Map<String, String> load = new Map<String, String>();
-        load.put('FirstName',fname);
-        load.put('LastName',lname);
-        load.put('Email',email);
+        for(InpData inp : ipData)
+        {
+            load.put('FirstName',inp.fname);
+            load.put('LastName',inp.lname);
+            load.put('Email',inp.email);
+        }       
         request.setBody(JSON.serialize(load));
         HttpResponse response = http.send(request);
         // Parse the JSON response
@@ -33,7 +47,6 @@ public with sharing class postContactData
         {
             System.debug(response.getBody());
         }
-        return response;
     }
 
 }
